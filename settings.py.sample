@@ -1,0 +1,8 @@
+def is_exception(csp_report):
+    """
+    Returns true if it triggers an exception
+    """
+    # Only remote blocked-uri
+    # if not csp_report['blocked-uri'].startswith('http'):
+    #     return True
+    return False
