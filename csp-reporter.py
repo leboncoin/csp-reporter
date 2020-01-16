@@ -10,12 +10,13 @@ import logging
 from flask import Flask, jsonify, abort, make_response, request
 
 # Own libraries
-import settings
+from utils.exception import is_exception
+from utils.sqlite import SqliteCmd
 
 # Debug
 # from pdb import set_trace as st
 
-VERSION = '%(prog)s 1.0.0'
+VERSION = '%(prog)s 1.2.0'
 APP = Flask(__name__)
 REPORT_PROPERTIES = [
     'blocked-uri',
@@ -34,7 +35,7 @@ REPORT_PROPERTIES = [
 ]
 logging.basicConfig(format='%(message)s')
 LOGGER = logging.getLogger('csp-reporter')
-
+SQL_TABLE = 'csp_reporter'
 
 def generate_report(data):
     """
@@ -55,7 +56,7 @@ def generate_report(data):
         return None, 400
     csp_report_data = csp_report_data['csp-report']
 
-    if settings.is_exception(csp_report_data):
+    if is_exception(csp_report_data):
         return None, 204
 
     for key in csp_report_data:
@@ -66,6 +67,24 @@ def generate_report(data):
     csp_report['ua-platform'] = request.user_agent.platform
 
     return csp_report, 204
+
+
+def update_database(csp_report):
+    """
+    Update the SQLite database
+    """
+    sql = SqliteCmd('csp_reporter.sqlite')
+    sql.sqlite_create_table(SQL_TABLE)
+
+    if sql.sqlite_verify_entry(SQL_TABLE, csp_report['blocked-uri']):
+        sql.sqlite_update_lastseen(SQL_TABLE, csp_report['blocked-uri'], csp_report['date'])
+    else:
+        sql.sqlite_insert(SQL_TABLE,
+                          csp_report['blocked-uri'],
+                          csp_report['document-uri'],
+                          csp_report['date'],
+                          csp_report['date'])
+    sql.sqlite_close()
 
 
 @APP.errorhandler(400)
@@ -110,6 +129,8 @@ def csp_receiver():
                     csp_report['blocked-uri'])
 
     LOGGER.critical(csp_report)
+
+    update_database(csp_report)
 
     return make_response('', 204)
 

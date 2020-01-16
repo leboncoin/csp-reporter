@@ -1,3 +1,4 @@
 *.pyc
-settings.py
 __py_cache__
+utils/exception.py
+csp_reporter.sqlite
