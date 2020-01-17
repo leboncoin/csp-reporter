@@ -18,13 +18,13 @@ class SqliteCmd():
         """
         Creating main Table if not exist
         """
-        self.cur.execute('CREATE TABLE IF NOT EXISTS '+table_name+' (BlockedURI TEXT NOT NULL PRIMARY KEY, DocumentURI TEXT NOT NULL, FirstSeen TEXT NOT NULL, LastSeen TEXT NOT NULL)')
+        self.cur.execute('CREATE TABLE IF NOT EXISTS '+table_name+' (BlockedURI TEXT NOT NULL PRIMARY KEY, DocumentURI TEXT NOT NULL, FirstSeen TEXT NOT NULL, LastSeen TEXT NOT NULL, Status TEXT NOT NULL)')
 
     def sqlite_insert(self, table_name, blocked_uri, document_uri, firstseen, lastseen):
         """
         Insert new entry infos
         """
-        self.cur.execute('INSERT OR IGNORE INTO '+table_name+' (BlockedURI, DocumentURI, FirstSeen, LastSeen) VALUES (?,?,?,?);', (blocked_uri, document_uri, firstseen, lastseen))
+        self.cur.execute('INSERT OR IGNORE INTO '+table_name+' (BlockedURI, DocumentURI, FirstSeen, LastSeen, Status) VALUES (?,?,?,?, "new");', (blocked_uri, document_uri, firstseen, lastseen))
         self.conn.commit()
 
     def sqlite_verify_entry(self, table_name, blocked_uri):

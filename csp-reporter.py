@@ -16,7 +16,7 @@ from utils.sqlite import SqliteCmd
 # Debug
 # from pdb import set_trace as st
 
-VERSION = '%(prog)s 1.3.0'
+VERSION = '%(prog)s 1.4.0'
 APP = Flask(__name__)
 REPORT_PROPERTIES = [
     'blocked-uri',
