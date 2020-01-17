@@ -16,7 +16,7 @@ from utils.sqlite import SqliteCmd
 # Debug
 # from pdb import set_trace as st
 
-VERSION = '%(prog)s 1.2.0'
+VERSION = '%(prog)s 1.3.0'
 APP = Flask(__name__)
 REPORT_PROPERTIES = [
     'blocked-uri',
@@ -76,11 +76,13 @@ def update_database(csp_report):
     sql = SqliteCmd('csp_reporter.sqlite')
     sql.sqlite_create_table(SQL_TABLE)
 
-    if sql.sqlite_verify_entry(SQL_TABLE, csp_report['blocked-uri']):
-        sql.sqlite_update_lastseen(SQL_TABLE, csp_report['blocked-uri'], csp_report['date'])
+    blocked_uri_without_qp = csp_report['blocked-uri'].split('?')[0]
+
+    if sql.sqlite_verify_entry(SQL_TABLE, blocked_uri_without_qp):
+        sql.sqlite_update_lastseen(SQL_TABLE, blocked_uri_without_qp, csp_report['date'])
     else:
         sql.sqlite_insert(SQL_TABLE,
-                          csp_report['blocked-uri'],
+                          blocked_uri_without_qp,
                           csp_report['document-uri'],
                           csp_report['date'],
                           csp_report['date'])
