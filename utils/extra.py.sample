@@ -1,0 +1,6 @@
+def extra_metadata(csp_report, request):
+    """
+    Returns csp_report with extra metadata
+    """
+    csp_report['client_ip'] = request.remote_addr
+    return csp_report

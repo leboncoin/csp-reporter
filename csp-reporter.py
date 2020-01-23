@@ -11,6 +11,7 @@ from flask import Flask, jsonify, abort, make_response, request
 
 # Own libraries
 from utils.exception import is_exception
+from utils.extra import extra_metadata
 from utils.sqlite import SqliteCmd
 
 # Debug
@@ -124,6 +125,8 @@ def csp_receiver():
         abort(status)
     elif csp_report is None and status == 204:
         return make_response('', 204)
+
+    csp_report = extra_metadata(csp_report, request)
 
     LOGGER.critical('[%s] %s -> %s',
                     csp_report['ua-browser'],
