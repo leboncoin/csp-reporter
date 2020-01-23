@@ -1,3 +1,9 @@
+"""
+Copyright (c) 2020 leboncoin
+MIT License
+Written by Nicolas BEGUIER (nicolas.beguier@adevinta.com)
+"""
+
 def extra_metadata(csp_report, request):
     """
     Returns csp_report with extra metadata

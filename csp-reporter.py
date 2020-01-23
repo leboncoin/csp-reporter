@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-""" CSP Reporter """
+"""
+CSP Reporter
+
+Copyright (c) 2020 leboncoin
+MIT License
+Written by Nicolas BEGUIER (nicolas.beguier@adevinta.com)
+
+"""
 
 # Standard library imports
 import datetime

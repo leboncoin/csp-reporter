@@ -1,3 +1,9 @@
+"""
+Copyright (c) 2020 leboncoin
+MIT License
+Written by Nicolas BEGUIER (nicolas.beguier@adevinta.com)
+"""
+
 def is_exception(csp_report):
     """
     Returns true if it triggers an exception
