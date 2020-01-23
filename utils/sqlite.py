@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """
 SQLITE
+
+Copyright (c) 2020 leboncoin
+MIT License
+Written by Nicolas BEGUIER (nicolas.beguier@adevinta.com)
+
 """
 
 # Third party library imports
