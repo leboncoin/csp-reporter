@@ -8,6 +8,9 @@ def is_exception(csp_report):
     """
     Returns true if it triggers an exception
     """
+    # Don't log custom 'original-policy'
+    # if csp_report['original-policy'] not in ['script-src 'none'; style-src 'none'; img-src 'none'; object-src 'none'; media-src 'none'; report-uri http://localhost:5000/api/csp-report/v1/report/']:
+    #     return True
     # Only remote blocked-uri
     # if not csp_report['blocked-uri'].startswith('http'):
     #     return True
