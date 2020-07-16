@@ -36,7 +36,7 @@ class SqliteCmd():
         """
         Verify if entry still exist
         """
-        res = self.cur.execute('SELECT EXISTS (SELECT 1 FROM '+table_name+' WHERE BlockedURI='+"\""+blocked_uri+"\""+' LIMIT 1);')
+        res = self.cur.execute('SELECT EXISTS (SELECT 1 FROM '+table_name+' WHERE BlockedURI=? LIMIT 1);', (blocked_uri,))
         fres = res.fetchone()[0]
         if fres != 0:
             return 1
