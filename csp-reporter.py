@@ -24,7 +24,7 @@ from utils.sqlite import SqliteCmd
 # Debug
 # from pdb import set_trace as st
 
-VERSION = '%(prog)s 1.4.0'
+VERSION = '%(prog)s 1.5.0'
 APP = Flask(__name__)
 REPORT_PROPERTIES = [
     'blocked-uri',
@@ -86,14 +86,19 @@ def update_database(csp_report):
 
     blocked_uri_without_qp = csp_report['blocked-uri'].split('?')[0]
 
-    if sql.sqlite_verify_entry(SQL_TABLE, blocked_uri_without_qp):
-        sql.sqlite_update_lastseen(SQL_TABLE, blocked_uri_without_qp, csp_report['date'])
+    if sql.sqlite_verify_entry(SQL_TABLE, blocked_uri_without_qp, csp_report['violated-directive']):
+        sql.sqlite_update_lastseen(SQL_TABLE, blocked_uri_without_qp, csp_report['violated-directive'], csp_report['date'])
     else:
         sql.sqlite_insert(SQL_TABLE,
                           blocked_uri_without_qp,
+                          csp_report['violated-directive'],
                           csp_report['document-uri'],
                           csp_report['date'],
-                          csp_report['date'])
+                          csp_report['date'],
+                          csp_report['column-number'],
+                          csp_report['line-number'],
+                          csp_report['referrer'],
+                          csp_report['script-sample'])
     sql.sqlite_close()
 
 
