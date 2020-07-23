@@ -24,7 +24,7 @@ from utils.sqlite import SqliteCmd
 # Debug
 # from pdb import set_trace as st
 
-VERSION = '%(prog)s 1.5.0'
+VERSION = '%(prog)s 1.6.0'
 APP = Flask(__name__)
 REPORT_PROPERTIES = [
     'blocked-uri',
@@ -41,6 +41,13 @@ REPORT_PROPERTIES = [
     'ua-platform',
     'violated-directive',
 ]
+UA_MAPPING = {
+    'chrome': 'UAChrome',
+    'edge': 'UAEdge',
+    'firefox': 'UAFirefox',
+    'safari': 'UASafari',
+    'other': 'UAOther'
+}
 logging.basicConfig(format='%(message)s')
 LOGGER = logging.getLogger('csp-reporter')
 SQL_TABLE = 'csp_reporter'
@@ -99,6 +106,12 @@ def update_database(csp_report):
                           csp_report['line-number'],
                           csp_report['referrer'],
                           csp_report['script-sample'])
+
+    if csp_report['ua-browser'] in UA_MAPPING:
+        sql.sqlite_increase_ua(SQL_TABLE, blocked_uri_without_qp, csp_report['violated-directive'], UA_MAPPING[csp_report['ua-browser']])
+    else:
+        sql.sqlite_increase_ua(SQL_TABLE, blocked_uri_without_qp, csp_report['violated-directive'], UA_MAPPING['other'])
+
     sql.sqlite_close()
 
 
@@ -159,4 +172,4 @@ def health():
 
 
 if __name__ == '__main__':
-    APP.run('0.0.0.0')
+    APP.run('0.0.0.0', port=80)

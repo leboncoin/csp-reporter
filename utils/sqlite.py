@@ -33,6 +33,11 @@ class SqliteCmd():
                 LineNumber TEXT,\
                 Referrer TEXT,\
                 ScriptSample TEXT,\
+                UAChrome INT,\
+                UAEdge INT,\
+                UAFirefox INT,\
+                UASafari INT,\
+                UAOther INT,\
                 Status TEXT NOT NULL,\
                 PRIMARY KEY (BlockedURI, ViolatedDirective))')
 
@@ -50,18 +55,33 @@ class SqliteCmd():
                 LineNumber,\
                 Referrer,\
                 ScriptSample,\
-                Status) VALUES (?,?,?,?,?,?,?,?,?, "new");', (blocked_uri, violated_directive, document_uri, firstseen, lastseen, column_n, line_n, referrer, script_sample))
+                UAChrome,\
+                UAEdge,\
+                UAFirefox,\
+                UASafari,\
+                UAOther,\
+                Status) VALUES (?,?,?,?,?,?,?,?,?,0,0,0,0,0,"new");', (blocked_uri, violated_directive, document_uri, firstseen, lastseen, column_n, line_n, referrer, script_sample))
         self.conn.commit()
 
     def sqlite_verify_entry(self, table_name, blocked_uri, violated_directive):
         """
         Verify if entry still exist
         """
-        res = self.cur.execute('SELECT EXISTS (SELECT 1 FROM '+table_name+' WHERE BlockedURI=? AND ViolatedDirective=? LIMIT 1);', (blocked_uri,violated_directive))
+        res = self.cur.execute('SELECT EXISTS (SELECT 1 FROM '+table_name+' WHERE BlockedURI=? AND ViolatedDirective=? LIMIT 1);', (blocked_uri, violated_directive))
         fres = res.fetchone()[0]
-        if fres != 0:
-            return 1
-        return 0
+        return fres != 0
+
+    def sqlite_increase_ua(self, table_name, blocked_uri, violated_directive, ua_column_name):
+        """
+        Increases the UA counter
+        """
+        if not self.sqlite_verify_entry(table_name, blocked_uri, violated_directive):
+            return False
+        if ua_column_name not in ['UAChrome', 'UAEdge', 'UAFirefox', 'UASafari', 'UAOther']:
+            return False
+        self.cur.execute('UPDATE '+table_name+' SET '+ua_column_name+' = '+ua_column_name+' + 1 WHERE BlockedURI=? AND ViolatedDirective=?;', (blocked_uri, violated_directive))
+        self.conn.commit()
+        return True
 
     def sqlite_update_lastseen(self, table_name, blocked_uri, violated_directive, lastseen):
         """
