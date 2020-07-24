@@ -9,3 +9,9 @@ pip3 install -r requirements.txt
 ./csp-reporter.py
 
 ```
+
+# License
+Licensed under the [MIT License](https://github.com/leboncoin/csp-reporter/blob/master/LICENSE).
+
+# Copyright
+Copyright (c) 2020 leboncoin
