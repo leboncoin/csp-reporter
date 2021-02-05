@@ -1,0 +1,4 @@
+enable_patrowl = False
+patrowl_api_token = 'xxxxxxxxxxxxxxxxx'
+patrowl_endpoint = 'https://patrowl.localhost'
+patrowl_asset_group = 0

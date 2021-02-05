@@ -2,7 +2,7 @@
 """
 CSP Reporter
 
-Copyright (c) 2020 leboncoin
+Copyright (c) 2020-2021 leboncoin
 MIT License
 Written by Nicolas BEGUIER (nicolas.beguier@adevinta.com)
 
@@ -15,16 +15,19 @@ import logging
 
 # Third party library imports
 from flask import Flask, jsonify, abort, make_response, request
+from patrowl4py.api import PatrowlManagerApi
 
 # Own libraries
 from utils.exception import is_exception
 from utils.extra import extra_metadata
+from utils.patrowl import add_asset, get_assets, add_in_assetgroup, add_finding
 from utils.sqlite import SqliteCmd
+import settings
 
 # Debug
 # from pdb import set_trace as st
 
-VERSION = '%(prog)s 1.6.0'
+VERSION = '%(prog)s 1.7.0'
 APP = Flask(__name__)
 REPORT_PROPERTIES = [
     'blocked-uri',
@@ -51,6 +54,12 @@ UA_MAPPING = {
 logging.basicConfig(format='%(message)s')
 LOGGER = logging.getLogger('csp-reporter')
 SQL_TABLE = 'csp_reporter'
+
+if settings.enable_patrowl:
+    PATROWL_API = PatrowlManagerApi(
+        url=settings.patrowl_endpoint,
+        auth_token=settings.patrowl_api_token
+    )
 
 def generate_report(data):
     """
@@ -115,6 +124,42 @@ def update_database(csp_report):
     sql.sqlite_close()
 
 
+def update_patrowl(csp_report):
+    """
+    Update the Patrowl database
+    """
+    assets = get_assets(PATROWL_API, settings.patrowl_asset_group)
+    new_asset = True
+    asset_id = None
+    asset_patrowl_name = csp_report['blocked-uri'].split('?')[0]
+    for asset in assets:
+        if asset['name'] == asset_patrowl_name:
+            new_asset = False
+            asset_id = asset['id']
+            continue
+    if new_asset:
+        LOGGER.warning('Add a new asset: %s', asset_patrowl_name)
+        created_asset = add_asset(
+            PATROWL_API,
+            asset_patrowl_name,
+            asset_patrowl_name)
+        if not created_asset:
+            LOGGER.critical('Error during asset %s creation...', asset_patrowl_name)
+            return False
+        asset_id = created_asset['id']
+        add_in_assetgroup(
+            PATROWL_API,
+            settings.patrowl_asset_group,
+            asset_id)
+        add_finding(
+            PATROWL_API,
+            asset_id,
+            f'[{csp_report["ua-browser"]}] {csp_report["document-uri"]} -> {csp_report["blocked-uri"]}',
+            str(csp_report),
+            'medium')
+    return True
+
+
 @APP.errorhandler(400)
 def error_400(error):
     return make_response(jsonify({
@@ -161,6 +206,9 @@ def csp_receiver():
     LOGGER.critical(csp_report)
 
     update_database(csp_report)
+
+    if settings.enable_patrowl:
+        update_patrowl(csp_report)
 
     return make_response('', 204)
 

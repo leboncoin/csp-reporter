@@ -3,3 +3,4 @@ __py_cache__
 utils/exception.py
 utils/extra.py
 csp_reporter.sqlite
+settings.py
