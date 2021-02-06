@@ -20,14 +20,14 @@ from patrowl4py.api import PatrowlManagerApi
 # Own libraries
 from utils.exception import is_exception
 from utils.extra import extra_metadata
-from utils.patrowl import add_asset, get_assets, add_in_assetgroup, add_finding
+from utils.patrowl import add_asset, get_assets, add_in_assetgroup, add_finding, get_findings
 from utils.sqlite import SqliteCmd
 import settings
 
 # Debug
 # from pdb import set_trace as st
 
-VERSION = '%(prog)s 1.7.0'
+VERSION = '%(prog)s 1.7.1'
 APP = Flask(__name__)
 REPORT_PROPERTIES = [
     'blocked-uri',
@@ -131,7 +131,11 @@ def update_patrowl(csp_report):
     assets = get_assets(PATROWL_API, settings.patrowl_asset_group)
     new_asset = True
     asset_id = None
-    asset_patrowl_name = csp_report['blocked-uri'].split('?')[0]
+    asset_url = csp_report['blocked-uri'].split('?')[0]
+    asset_patrowl_name = asset_url\
+        .replace('https://', '')\
+        .replace('http://', '')\
+        .split('/')[0]
     for asset in assets:
         if asset['name'] == asset_patrowl_name:
             new_asset = False
@@ -143,7 +147,7 @@ def update_patrowl(csp_report):
             PATROWL_API,
             asset_patrowl_name,
             asset_patrowl_name)
-        if not created_asset:
+        if not created_asset or 'id' not in created_asset:
             LOGGER.critical('Error during asset %s creation...', asset_patrowl_name)
             return False
         asset_id = created_asset['id']
@@ -151,10 +155,24 @@ def update_patrowl(csp_report):
             PATROWL_API,
             settings.patrowl_asset_group,
             asset_id)
+    if csp_report['ua-browser'] not in UA_MAPPING:
+        ua_browser = UA_MAPPING['other']
+    else:
+        ua_browser = UA_MAPPING[csp_report['ua-browser']]
+    findings = get_findings(PATROWL_API, asset_id)
+    new_finding = True
+    finding_title = f'[{csp_report["effective-directive"]}][{ua_browser}] {asset_url}'
+    for finding in findings:
+        if finding['title'] == finding_title:
+            new_finding = False
+    if new_finding:
+        LOGGER.warning('Add finding: %s for asset %s',
+            finding_title,
+            asset_patrowl_name)
         add_finding(
             PATROWL_API,
             asset_id,
-            f'[{csp_report["ua-browser"]}] {csp_report["document-uri"]} -> {csp_report["blocked-uri"]}',
+            finding_title,
             str(csp_report),
             'medium')
     return True
@@ -198,12 +216,13 @@ def csp_receiver():
 
     csp_report = extra_metadata(csp_report, request)
 
-    LOGGER.critical('[%s] %s -> %s',
+    LOGGER.debug('[%s][%s] %s -> %s',
+                    csp_report['violated-directive'],
                     csp_report['ua-browser'],
                     csp_report['document-uri'],
                     csp_report['blocked-uri'])
 
-    LOGGER.critical(csp_report)
+    LOGGER.debug(csp_report)
 
     update_database(csp_report)
 

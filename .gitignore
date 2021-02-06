@@ -4,3 +4,4 @@ utils/exception.py
 utils/extra.py
 csp_reporter.sqlite
 settings.py
+venv
