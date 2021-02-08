@@ -27,7 +27,7 @@ import settings
 # Debug
 # from pdb import set_trace as st
 
-VERSION = '%(prog)s 1.7.1'
+VERSION = '%(prog)s 1.8.0'
 APP = Flask(__name__)
 REPORT_PROPERTIES = [
     'blocked-uri',
@@ -124,6 +124,21 @@ def update_database(csp_report):
     sql.sqlite_close()
 
 
+def gen_patrowl_finding_title(csp_report, asset_url):
+    """
+    """
+    if 'ua-browser' not in csp_report:
+        ua_browser = 'unknown-browser'
+    else:
+        ua_browser = csp_report['ua-browser']
+    if 'ua-platform' not in csp_report:
+        ua_platform = 'unknown-os'
+    else:
+        ua_platform = csp_report['ua-platform']
+
+    return f'[{csp_report["effective-directive"]}][{ua_platform}][{ua_browser}] {asset_url}'
+
+
 def update_patrowl(csp_report):
     """
     Update the Patrowl database
@@ -142,33 +157,29 @@ def update_patrowl(csp_report):
             asset_id = asset['id']
             continue
     if new_asset:
-        LOGGER.warning('Add a new asset: %s', asset_patrowl_name)
+        LOGGER.warning(f'Add a new asset: {asset_patrowl_name}')
         created_asset = add_asset(
             PATROWL_API,
             asset_patrowl_name,
             asset_patrowl_name)
         if not created_asset or 'id' not in created_asset:
-            LOGGER.critical('Error during asset %s creation...', asset_patrowl_name)
+            LOGGER.critical(f'Error during asset {asset_patrowl_name} creation...')
             return False
         asset_id = created_asset['id']
         add_in_assetgroup(
             PATROWL_API,
             settings.patrowl_asset_group,
             asset_id)
-    if csp_report['ua-browser'] not in UA_MAPPING:
-        ua_browser = UA_MAPPING['other']
     else:
-        ua_browser = UA_MAPPING[csp_report['ua-browser']]
+        LOGGER.warning(f'Asset {asset_patrowl_name} already exists')
     findings = get_findings(PATROWL_API, asset_id)
     new_finding = True
-    finding_title = f'[{csp_report["effective-directive"]}][{ua_browser}] {asset_url}'
+    finding_title = gen_patrowl_finding_title(csp_report, asset_url)
     for finding in findings:
         if finding['title'] == finding_title:
             new_finding = False
     if new_finding:
-        LOGGER.warning('Add finding: %s for asset %s',
-            finding_title,
-            asset_patrowl_name)
+        LOGGER.warning(f'Add finding "{finding_title}" for asset {asset_patrowl_name}')
         add_finding(
             PATROWL_API,
             asset_id,
