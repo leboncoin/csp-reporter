@@ -27,7 +27,7 @@ import settings
 # Debug
 # from pdb import set_trace as st
 
-VERSION = '%(prog)s 1.8.0'
+VERSION = '%(prog)s 1.8.1'
 APP = Flask(__name__)
 REPORT_PROPERTIES = [
     'blocked-uri',
@@ -136,7 +136,7 @@ def gen_patrowl_finding_title(csp_report, asset_url):
     else:
         ua_platform = csp_report['ua-platform']
 
-    return f'[{csp_report["effective-directive"]}][{ua_platform}][{ua_browser}] {asset_url}'
+    return f'[{csp_report["effective-directive"]}][{ua_platform}][{ua_browser}] {asset_url}'.strip()
 
 
 def update_patrowl(csp_report):
@@ -150,7 +150,7 @@ def update_patrowl(csp_report):
     asset_patrowl_name = asset_url\
         .replace('https://', '')\
         .replace('http://', '')\
-        .split('/')[0]
+        .split('/')[0].strip()
     for asset in assets:
         if asset['name'] == asset_patrowl_name:
             new_asset = False
