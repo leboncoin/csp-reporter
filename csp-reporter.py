@@ -70,15 +70,12 @@ def generate_report(data):
         csp_report[prop] = ''
 
     try:
-        csp_report_data = json.loads(data)
-    except json.decoder.JSONDecodeError:
-        return None, 400
-    except:
+        csp_report_data = json.loads(data)['csp-report']
+    except Exception:
         return None, 400
 
-    if not 'csp-report' in csp_report_data:
+    if not isinstance(csp_report_data, dict):
         return None, 400
-    csp_report_data = csp_report_data['csp-report']
 
     if is_exception(csp_report_data):
         return None, 204
