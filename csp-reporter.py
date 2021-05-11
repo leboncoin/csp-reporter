@@ -27,7 +27,7 @@ import settings
 # Debug
 # from pdb import set_trace as st
 
-VERSION = '%(prog)s 1.8.1'
+VERSION = '%(prog)s 1.8.2'
 APP = Flask(__name__)
 REPORT_PROPERTIES = [
     'blocked-uri',
