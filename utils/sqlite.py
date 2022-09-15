@@ -2,7 +2,7 @@
 """
 SQLITE
 
-Copyright (c) 2020-2021 leboncoin
+Copyright (c) 2020-2022 leboncoin
 MIT License
 Written by Nicolas BEGUIER (nicolas.beguier@adevinta.com)
 

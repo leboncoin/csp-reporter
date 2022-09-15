@@ -2,7 +2,7 @@
 """
 CSP Reporter
 
-Copyright (c) 2020-2021 leboncoin
+Copyright (c) 2020-2022 leboncoin
 MIT License
 Written by Nicolas BEGUIER (nicolas.beguier@adevinta.com)
 
@@ -27,7 +27,7 @@ import settings
 # Debug
 # from pdb import set_trace as st
 
-VERSION = '%(prog)s 1.8.2'
+VERSION = '%(prog)s 1.8.3'
 APP = Flask(__name__)
 REPORT_PROPERTIES = [
     'blocked-uri',
@@ -65,7 +65,7 @@ def generate_report(data):
     """
     Generate a valid csp report from request, and an HTTP status
     """
-    csp_report = dict()
+    csp_report = {}
     for prop in REPORT_PROPERTIES:
         csp_report[prop] = ''
 
@@ -77,7 +77,9 @@ def generate_report(data):
     if not isinstance(csp_report_data, dict):
         return None, 400
 
-    if is_exception(csp_report_data):
+    is_204, reason = is_exception(csp_report_data)
+    if is_204:
+        LOGGER.warning(f'Ignore report: {reason}')
         return None, 204
 
     for key in csp_report_data:
@@ -224,13 +226,13 @@ def csp_receiver():
 
     csp_report = extra_metadata(csp_report, request)
 
-    LOGGER.debug('[%s][%s] %s -> %s',
+    LOGGER.warning('[%s][%s] %s -> %s',
                     csp_report['violated-directive'],
                     csp_report['ua-browser'],
                     csp_report['document-uri'],
                     csp_report['blocked-uri'])
 
-    LOGGER.debug(csp_report)
+    LOGGER.warning(csp_report)
 
     update_database(csp_report)
 

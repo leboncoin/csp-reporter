@@ -1,5 +1,5 @@
 """
-Copyright (c) 2020-2021 leboncoin
+Copyright (c) 2020-2022 leboncoin
 MIT License
 Written by Nicolas BEGUIER (nicolas.beguier@adevinta.com)
 """
@@ -10,8 +10,8 @@ def is_exception(csp_report):
     """
     # Don't log custom 'original-policy'
     # if csp_report['original-policy'] not in ['script-src 'none'; style-src 'none'; img-src 'none'; object-src 'none'; media-src 'none'; report-uri http://localhost:5000/api/csp-report/v1/report/']:
-    #     return True
+    #     return True, 'custom_policy'
     # Only remote blocked-uri
     # if not csp_report['blocked-uri'].startswith('http'):
-    #     return True
-    return False
+    #     return True, f'remote_blocked_uri ({csp_report["blocked-uri"]})'
+    return False, 'ok'

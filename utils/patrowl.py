@@ -2,7 +2,7 @@
 """
 Patrowl library
 
-Copyright (c) 2020-2021 leboncoin
+Copyright (c) 2020-2022 leboncoin
 MIT License
 Written by Nicolas BEGUIER (nicolas.beguier@adevinta.com)
 
@@ -31,7 +31,7 @@ def get_assets(patrowl_api, assetgroup_id):
     Get assets from AssetGroup
     """
     assets_list = []
-    assets = list()
+    assets = []
     assetgroup = patrowl_api.get_assetgroup_by_id(assetgroup_id)
     assets += sorted(assetgroup['assets'], key=lambda k: k['id'], reverse=True)
     for asset in assets:
@@ -44,7 +44,7 @@ def add_in_assetgroup(patrowl_api, assetgroup_id, asset_id):
     """
     Add asset in AssetGroup
     """
-    new_assets_ids = list()
+    new_assets_ids = []
     new_assets_ids.append(asset_id)
 
     dst_assetgroup = patrowl_api.get_assetgroup_by_id(assetgroup_id)
@@ -80,4 +80,4 @@ def get_findings(patrowl_api, asset_id):
         return patrowl_api.get_asset_findings_by_id(asset_id)
     except:
         pass
-    return list()
+    return []
